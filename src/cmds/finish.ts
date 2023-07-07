@@ -31,13 +31,16 @@ import {
 } from '../lib/git'
 import { warning } from '../lib/log'
 
-const askTagNameToUser = async (): Promise<string | undefined> => {
+const askTagNameToUser = async (
+  defTag: string
+): Promise<string | undefined> => {
   return getConfigValue('tagCommit') === 'true'
     ? (
         await promptUser([
           askInput({
             message: `Tag name (latest tag: ${getLatestTag()})`,
             name: 'tag',
+            defaultValue: defTag,
             validate: (input) =>
               '' !== input.trim() || 'Please, enter a valid tag name',
           }),
@@ -190,7 +193,9 @@ const releaseHotfixAction = async (
     arg
   )
 
-  const tag = opts.tag ?? (await askTagNameToUser())
+  const defTag = branchName.replace(/^[^/]*\//, '')
+
+  const tag = opts.tag ?? (await askTagNameToUser(defTag))
 
   tag
     ? tagBranch(tag as string, (opts.message as string) ?? tag)
